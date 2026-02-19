@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CX Case Study — Presentation</title>
+  <style>
+    :root {
+      --blue:    #1E40AF;
+      --blue2:   #3B82F6;
+      --sky:     #0EA5E9;
+      --dark:    #0F172A;
+      --slate:   #1E293B;
+      --muted:   #64748B;
+      --border:  #E2E8F0;
+      --bg:      #F8FAFC;
+      --white:   #FFFFFF;
+      --green:   #10B981;
+      --amber:   #F59E0B;
+      --red:     #EF4444;
+      --purple:  #7C3AED;
+      --code-bg: #1E293B;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width:100%; height:100%; overflow:hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--dark); }
+
+    /* ── Progress bar ───────────────────────────────────── */
+    #pbar { position:fixed; top:0; left:0; height:3px;
+      background: var(--sky); transition: width .3s ease; z-index:999; }
+
+    /* ── Deck & slide layout ────────────────────────────── */
+    #deck { width:100vw; height:100vh; position:relative; overflow:hidden; }
+    .slide { position:absolute; inset:0; display:flex; flex-direction:column;
+      opacity:0; transform:translateX(60px); pointer-events:none;
+      transition: opacity .35s ease, transform .35s ease; }
+    .slide.active { opacity:1; transform:translateX(0); pointer-events:all; }
+    .slide.prev   { opacity:0; transform:translateX(-60px); }
+
+    /* ── Header ─────────────────────────────────────────── */
+    .sh { background: var(--blue); padding:.75rem 2.5rem;
+      display:flex; align-items:center; justify-content:space-between;
+      flex-shrink:0; }
+    .sh h1 { color:#fff; font-size:1rem; font-weight:600; letter-spacing:.02em; }
+    .sh .sn { color:rgba(255,255,255,.5); font-size:.8rem; }
+
+    /* ── Body ────────────────────────────────────────────── */
+    .sb { flex:1; background:var(--bg); padding:1.6rem 2.8rem; overflow-y:auto;
+      display:flex; flex-direction:column; }
+
+    /* ── Title slide ─────────────────────────────────────── */
+    .title-slide .sb {
+      background: linear-gradient(140deg, var(--dark) 0%, #1a3a6b 100%);
+      align-items:center; justify-content:center; text-align:center; }
+    .ts-title { color:#fff; font-size:2.4rem; font-weight:800;
+      line-height:1.15; margin-bottom:.5rem; }
+    .ts-sub   { color:var(--sky); font-size:1.15rem; font-weight:400;
+      margin-bottom:2rem; }
+    .ts-desc  { color:rgba(255,255,255,.65); font-size:.9rem;
+      max-width:560px; line-height:1.7; }
+    .badge-row { display:flex; gap:.75rem; justify-content:center;
+      flex-wrap:wrap; margin-top:1.75rem; }
+    .badge { background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2);
+      color:#fff; padding:.4rem 1.1rem; border-radius:999px; font-size:.8rem; }
+
+    /* ── Section headings ───────────────────────────────── */
+    .sb h2 { color:var(--blue); font-size:1.55rem; font-weight:700;
+      margin-bottom:1.25rem; padding-bottom:.6rem;
+      border-bottom:3px solid var(--blue2); }
+    .sb h3 { color:var(--slate); font-size:1rem; font-weight:700;
+      margin-top:1.1rem; margin-bottom:.5rem; }
+    .sb p  { color:#334155; line-height:1.7; margin-bottom:.65rem; font-size:.9rem; }
+    .sb ul { list-style:none; padding:0; margin-bottom:.75rem; }
+    .sb ul li { padding:.3rem 0 .3rem 1.4rem; position:relative;
+      color:#334155; font-size:.87rem; line-height:1.6; }
+    .sb ul li::before { content:'▸'; position:absolute; left:0;
+      color:var(--blue2); font-size:.7rem; top:.45rem; }
+
+    /* ── Pipeline ────────────────────────────────────────── */
+    .pipeline { display:flex; align-items:stretch; flex-wrap:wrap;
+      gap:0; margin:1.25rem 0; }
+    .ps { background:#fff; border:2px solid var(--blue);
+      border-radius:8px; padding:.65rem 1rem; text-align:center;
+      min-width:110px; flex:1; box-shadow:0 2px 6px rgba(0,0,0,.07); }
+    .ps .icon { font-size:1.4rem; margin-bottom:.2rem; }
+    .ps .lbl  { font-size:.75rem; font-weight:700; color:var(--blue);
+      line-height:1.3; }
+    .ps .sub  { font-size:.68rem; color:var(--muted); margin-top:.15rem; }
+    .pa { font-size:1.3rem; color:var(--blue2); align-self:center;
+      padding:0 .3rem; flex-shrink:0; }
+
+    /* ── Tables ──────────────────────────────────────────── */
+    .tbl { width:100%; border-collapse:collapse; font-size:.82rem; }
+    .tbl th { background:var(--blue); color:#fff; padding:.55rem .85rem;
+      text-align:left; font-weight:600; }
+    .tbl td { padding:.45rem .85rem; border-bottom:1px solid var(--border);
+      color:#334155; vertical-align:top; }
+    .tbl tr:hover td { background:#EFF6FF; }
+    .tbl tr:last-child td { border-bottom:none; }
+
+    /* ── Code blocks ─────────────────────────────────────── */
+    .code { background:var(--code-bg); border-radius:8px;
+      padding:.85rem 1.1rem; margin:.75rem 0; overflow-x:auto; }
+    .code pre { color:#E2E8F0;
+      font-family:'Cascadia Code','Fira Code','Courier New',monospace;
+      font-size:.75rem; line-height:1.65; white-space:pre; }
+    .kw { color:#93C5FD; } .st { color:#86EFAC; }
+    .cm { color:#64748B; } .nm { color:#FCA5A5; }
+
+    /* ── Cards ───────────────────────────────────────────── */
+    .cards { display:grid; gap:.9rem; margin:.75rem 0; }
+    .cards.c2 { grid-template-columns:1fr 1fr; }
+    .cards.c3 { grid-template-columns:1fr 1fr 1fr; }
+    .card { background:#fff; border:1px solid var(--border);
+      border-radius:10px; padding:.9rem 1.1rem;
+      box-shadow:0 1px 4px rgba(0,0,0,.05); }
+    .card.bl { border-left:4px solid var(--blue); }
+    .card.gr { border-left:4px solid var(--green); }
+    .card.am { border-left:4px solid var(--amber); }
+    .card.re { border-left:4px solid var(--red); }
+    .card.pu { border-left:4px solid var(--purple); }
+    .card h4 { color:var(--slate); font-size:.88rem; font-weight:700;
+      margin-bottom:.4rem; }
+    .card p, .card li { font-size:.8rem; color:#475569; }
+
+    /* ── Tags ────────────────────────────────────────────── */
+    .tag { display:inline-block; padding:.18rem .55rem;
+      border-radius:4px; font-size:.72rem; font-weight:700;
+      margin-right:.3rem; vertical-align:middle; }
+    .tq { background:#DBEAFE; color:#1D4ED8; }
+    .tl { background:#D1FAE5; color:#065F46; }
+    .ti { background:#E0F2FE; color:#0369A1; }
+    .tw { background:#FEF3C7; color:#92400E; }
+    .tc { background:#FEE2E2; color:#991B1B; }
+
+    /* ── Callouts ────────────────────────────────────────── */
+    .callout { border-radius:8px; padding:.75rem 1rem; margin:.5rem 0;
+      font-size:.83rem; line-height:1.6; display:flex; gap:.65rem; }
+    .ci { background:#EFF6FF; border:1px solid #BFDBFE; color:#1E40AF; }
+    .cw { background:#FFFBEB; border:1px solid #FDE68A; color:#92400E; }
+    .cs { background:#ECFDF5; border:1px solid #A7F3D0; color:#065F46; }
+    .cr { background:#FEF2F2; border:1px solid #FECACA; color:#991B1B; }
+    .ci-icon { font-size:1rem; flex-shrink:0; }
+
+    /* ── Flow diagram ────────────────────────────────────── */
+    .flow { background:#fff; border:1px solid var(--border);
+      border-radius:10px; padding:1.25rem 1.5rem; margin:.75rem 0;
+      overflow-x:auto; }
+    .frow { display:flex; align-items:center; flex-wrap:wrap;
+      gap:.35rem; margin-bottom:.55rem; }
+    .fn { padding:.35rem .8rem; border-radius:6px;
+      font-size:.73rem; font-weight:600; white-space:nowrap; }
+    .fn-b { background:#DBEAFE; color:#1D4ED8; border:1.5px solid #93C5FD; }
+    .fn-g { background:#D1FAE5; color:#065F46; border:1.5px solid #6EE7B7; }
+    .fn-a { background:#FEF3C7; color:#92400E; border:1.5px solid #FCD34D; }
+    .fn-r { background:#FEE2E2; color:#991B1B; border:1.5px solid #FCA5A5; }
+    .fn-p { background:#EDE9FE; color:#5B21B6; border:1.5px solid #C4B5FD; }
+    .fn-s { background:#F1F5F9; color:#475569; border:1.5px solid #CBD5E1; }
+    .fa  { color:var(--muted); font-size:1rem; padding:0 .1rem; }
+    .findent { padding-left:2rem; }
+    .findent2 { padding-left:4rem; }
+
+    /* ── Two-column layout ───────────────────────────────── */
+    .two { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+    .three { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; }
+
+    /* ── Navigation ──────────────────────────────────────── */
+    #nav { position:fixed; bottom:0; left:0; right:0; height:48px;
+      background:rgba(15,23,42,.97);
+      display:flex; align-items:center; justify-content:center;
+      gap:1rem; z-index:100; }
+    .nb { background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2);
+      color:#fff; padding:.35rem 1.1rem; border-radius:6px; cursor:pointer;
+      font-size:.83rem; font-weight:500; transition:background .2s; }
+    .nb:hover { background:rgba(255,255,255,.22); }
+    #pt { color:rgba(255,255,255,.55); font-size:.78rem;
+      min-width:65px; text-align:center; }
+    .kh { color:rgba(255,255,255,.35); font-size:.72rem; }
+  </style>
+</head>
+<body>
+<div id="pbar"></div>
+<div id="deck">
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 1 — TITLE
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide active title-slide">
+    <div class="sh">
+      <h1>CX Case Study</h1><span class="sn">1 / 15</span>
+    </div>
+    <div class="sb">
+      <div class="ts-title">Customer Complaints<br>Intelligence Suite</div>
+      <div class="ts-sub">A three-part system: Extract · Analyze · Alert</div>
+      <div class="ts-desc">
+        End-to-end tooling for understanding, querying, and monitoring
+        customer complaint data — from raw CSV to AI-assisted chat
+        to automated early warnings.
+      </div>
+      <div class="badge-row">
+        <span class="badge">📋 Assignment 1 — CLI Pipeline</span>
+        <span class="badge">🤖 Assignment 2 — AI Analyzer</span>
+        <span class="badge">🚨 Assignment 3 — EWP / n8n</span>
+      </div>
+      <div class="badge-row">
+        <span class="badge">Python · scikit-learn · Pandas</span>
+        <span class="badge">NO-KEY MODE ready</span>
+        <span class="badge">Fully deterministic (seed=42)</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 2 — AGENDA / OVERVIEW
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="sh"><h1>Overview</h1><span class="sn">2 / 15</span></div>
+    <div class="sb">
+      <h2>Three Assignments, One Pipeline</h2>
+      <div class="cards c3">
+        <div class="card bl">
+          <h4>📋 Assignment 1: Complaints CLI Tool</h4>
+          <ul>
+            <li>Ingests any complaints CSV</li>
+            <li>Auto-detects text column</li>
+            <li>Cleans &amp; deduplicates</li>
+            <li>Extracts themes via TF-IDF + KMeans</li>
+            <li>Outputs 4 files: CSV, themes, summary, metrics</li>
+          </ul>
+        </div>
+        <div class="card gr">
+          <h4>🤖 Assignment 2: AI + Data Analyzer</h4>
+          <ul>
+            <li>Chat-style CLI interface</li>
+            <li>Quant router → counts, trends, breakdowns</li>
+            <li>Qual router → retrieval + summarisation</li>
+            <li>NO-KEY MODE (rule-based fallback)</li>
+            <li>LLM plug-in: OpenAI or Anthropic</li>
+          </ul>
+        </div>
+        <div class="card re">
+          <h4>🚨 Assignment 3: EWP / n8n Design</h4>
+          <ul>
+            <li>6 alert signals defined</li>
+            <li>σ-based thresholds (WARN / CRITICAL)</li>
+            <li>Human-in-the-loop acknowledgement</li>
+            <li>n8n workflow diagram (Mermaid)</li>
+            <li>Full audit log schema</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout ci">
+        <span class="ci-icon">💡</span>
+        <div><strong>Design principle:</strong> Each assignment is independently runnable.
+        Assignment 2 auto-invokes Assignment 1 if outputs are missing.
+        All random operations use <code>seed=42</code> for determinism.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 3 — A1: PIPELINE OVERVIEW
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="sh"><h1>Assignment 1 — Pipeline Overview</h1><span class="sn">3 / 15</span></div>
+    <div class="sb">
+      <h2>End-to-End Complaints Processing</h2>
+      <div class="pipeline">
+        <div class="ps"><div class="icon">📄</div><div class="lbl">CSV Input</div><div class="sub">Any complaints file</div></div>
+        <div class="pa">→</div>
+        <div class="ps"><div class="icon">🔍</div><div class="lbl">Schema Detect</div><div class="sub">Auto-find text col</div></div>
+        <div class="pa">→</div>
+        <div class="ps"><div class="icon">🧹</div><div class="lbl">Clean &amp; Dedupe</div><div class="sub">Normalise text</div></div>
+        <div class="pa">→</div>
+        <div class="ps"><div class="icon">📐</div><div class="lbl">TF-IDF</div><div class="sub">Vectorise (1-2 gram)</div></div>
+        <div class="pa">→</div>
+        <div class="ps"><div class="icon">🎯</div><div class="lbl">KMeans</div><div class="sub">Cluster themes</div></div>
+        <div class="pa">→</div>
+        <div class="ps"><div class="icon">📊</div><div class="lbl">Reports</div><div class="sub">4 output files</div></div>
+      </div>
+      <h3>Input Schema (auto-detected if columns differ)</h3>
+      <table class="tbl">
+        <tr><th>Column</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+        <tr><td>complaint_text</td><td>string</td><td>Yes*</td><td>Any text column; auto-detected by name then by avg length</td></tr>
+        <tr><td>date</td><td>date string</td><td>No</td><td>Enables trend analysis in A2</td></tr>
+        <tr><td>channel</td><td>categorical</td><td>No</td><td>email, phone, chat, social_media, web_form</td></tr>
+        <tr><td>product_category</td><td>categorical</td><td>No</td><td>Enables product breakdown</td></tr>
+        <tr><td>severity</td><td>low/medium/high</td><td>No</td><td>Enables severity analysis</td></tr>
+      </table>
+      <h3>Output Files</h3>
+      <div class="cards c2">
+        <div class="card bl"><h4>cleaned_complaints.csv</h4><p>Deduplicated rows + <code>text_clean</code> normalised column + <code>theme_id</code></p></div>
+        <div class="card bl"><h4>themes.csv</h4><p>theme_id · label · count · top_keywords · example_texts</p></div>
+        <div class="card gr"><h4>summary.md</h4><p>Human-readable Markdown: dataset stats, channel/product tables, theme details</p></div>
+        <div class="card gr"><h4>metrics.json</h4><p>Machine-readable: cleaning metrics, theme counts — for downstream tooling or dashboards</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 4 — A1: CLEANING RULES
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="sh"><h1>Assignment 1 — Cleaning Rules</h1><span class="sn">4 / 15</span></div>
+    <div class="sb">
+      <h2>5-Step Cleaning Pipeline</h2>
+      <table class="tbl">
+        <tr><th>#</th><th>Step</th><th>What it does</th><th>Tracked in metrics.json</th></tr>
+        <tr><td>1</td><td>Drop all-null rows</td><td>Remove rows where every column is NaN</td><td><code>dropped_all_null_rows</code></td></tr>
+        <tr><td>2</td><td>Drop null/empty text</td><td>Remove rows where the complaint text column is empty or whitespace-only</td><td><code>dropped_null_text</code></td></tr>
+        <tr><td>3</td><td>Deduplicate</td><td>Drop exact-duplicate complaint texts (keep first occurrence)</td><td><code>dropped_duplicates</code></td></tr>
+        <tr><td>4</td><td>Normalise text</td><td>Lowercase → strip URLs → strip emails → strip special chars → collapse whitespace</td><td>— (applied to all rows)</td></tr>
+        <tr><td>5</td><td>Remove short texts</td><td>Drop rows where normalised text is &lt; 10 characters</td><td><code>dropped_short_text</code></td></tr>
+      </table>
+      <h3>Text Normalisation — Before &amp; After</h3>
+      <div class="two">
+        <div>
+          <p style="color:var(--muted); font-size:.78rem; margin-bottom:.3rem;">❌ Raw input</p>
+          <div class="code"><pre>"MY CARD WAS DECLINED!!  Visit https://help.bank.com or
+email support@bank.com. Charge of $350 unauthorized!!"</pre></div>
+        </div>
+        <div>
+          <p style="color:var(--muted); font-size:.78rem; margin-bottom:.3rem;">✅ After normalise_text()</p>
+          <div class="code"><pre>"my card was declined visit or charge of 350 unauthorized"</pre></div>
+        </div>
+      </div>
+      <div class="callout cw">
+        <span class="ci-icon">⚠️</span>
+        <div><strong>Assumption:</strong> The cleaning intentionally removes URLs and emails before LLM processing to reduce PII surface area. Dollar amounts are partially stripped ($ symbol removed) but numbers are kept for topic signal.</div>
+      </div>
+      <div class="callout cs">
+        <span class="ci-icon">✅</span>
+        <div><strong>Determinism:</strong> All cleaning steps are deterministic (no random operations at this stage). Results are identical on repeated runs of the same input file.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 5 — A1: THEME EXTRACTION
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="sh"><h1>Assignment 1 — Theme Extraction</h1><span class="sn">5 / 15</span></div>
+    <div class="sb">
+      <h2>TF-IDF + KMeans — Offline, No API Keys</h2>
+      <div class="pipeline" style="margin-bottom:1rem;">
+        <div class="ps"><div class="icon">📝</div><div class="lbl">Cleaned texts</div><div class="sub">text_clean col</div></div>
+        <div class="pa">→</div>
+        <div class="ps"><div class="icon">📐</div><div class="lbl">TF-IDF</div><div class="sub">1-2 gram, 3k vocab<br>sublinear TF</div></div>
+        <div class="pa">→</div>
+        <div class="ps"><div class="icon">🎯</div><div class="lbl">KMeans</div><div class="sub">n=5 clusters<br>seed=42, n_init=10</div></div>
+        <div class="pa">→</div>
+        <div class="ps"><div class="icon">🏷️</div><div class="lbl">Auto-label</div><div class="sub">Keyword rules<br>→ human name</div></div>
+        <div class="pa">→</div>
+        <div class="ps"><div class="icon">📊</div><div class="lbl">themes.csv</div><div class="sub">Ranked by count</div></div>
+      </div>
+      <div class="two">
+        <div>
+          <h3>Key TF-IDF Parameters</h3>
+          <table class="tbl">
+            <tr><th>Parameter</th><th>Value</th><th>Rationale</th></tr>
+            <tr><td>ngram_range</td><td>(1, 2)</td><td>Captures "credit card", "mobile app", etc.</td></tr>
+            <tr><td>max_features</td><td>3,000</td><td>Limits memory; sufficient for CX vocabulary</td></tr>
+            <tr><td>min_df</td><td>2</td><td>Filters out hapax legomena / typos</td></tr>
+            <tr><td>sublinear_tf</td><td>True</td><td>Dampens high-freq terms (e.g. "account")</td></tr>
+            <tr><td>stop_words</td><td>Custom</td><td>Domain-augmented list (removes "please", "told", etc.)</td></tr>
+          </table>
+        </div>
+        <div>
+          <h3>Auto-Labelling Logic</h3>
+          <p style="font-size:.82rem;">Top 8 keywords from cluster centroid are matched against rule groups:</p>
+          <div class="code"><pre>{"app","mobile","login","crash"} → <span class="st">"App &amp; Login Issues"</span>
+{"charge","fee","overdraft"}    → <span class="st">"Billing &amp; Fee Disputes"</span>
+{"transaction","declined"}      → <span class="st">"Transaction Problems"</span>
+{"locked","access","frozen"}    → <span class="st">"Account Access Issues"</span>
+{"service","wait","agent"}      → <span class="st">"Customer Service Quality"</span>
+<span class="cm"># Fallback: title-case top 2 keywords</span></pre></div>
+        </div>
+      </div>
+      <div class="callout ci">
+        <span class="ci-icon">💡</span>
+        <div><strong>Scaling note:</strong> For &gt;100k complaints, increase <code>max_features</code> to 10k and consider MiniBatchKMeans for faster convergence. For production, LDA or BERTopic would give richer topic models.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 6 — A1: SAMPLE OUTPUTS
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="sh"><h1>Assignment 1 — Sample Outputs (80-row dataset)</h1><span class="sn">6 / 15</span></div>
+    <div class="sb">
+      <h2>Extracted Themes (themes.csv preview)</h2>
+      <table class="tbl">
+        <tr><th>theme_id</th><th>label</th><th>count</th><th>Top 5 keywords</th></tr>
+        <tr><td>0</td><td>Transaction Problems</td><td>~20</td><td>transaction, card, declined, unauthorized, payment</td></tr>
+        <tr><td>1</td><td>App &amp; Login Issues</td><td>~15</td><td>app, mobile, login, crash, error</td></tr>
+        <tr><td>2</td><td>Billing &amp; Fee Disputes</td><td>~15</td><td>fee, charged, overdraft, statement, billing</td></tr>
+        <tr><td>3</td><td>Customer Service Quality</td><td>~15</td><td>service, wait, hold, agent, transferred</td></tr>
+        <tr><td>4</td><td>Account Access Issues</td><td>~15</td><td>account, locked, access, frozen, reset</td></tr>
+      </table>
+      <h3>metrics.json (structure preview)</h3>
+      <div class="code"><pre>{
+  <span class="kw">"generated_at"</span>: <span class="st">"2024-03-28T14:00:00Z"</span>,
+  <span class="kw">"cleaning"</span>: {
+    <span class="kw">"rows_in"</span>: <span class="nm">80</span>, <span class="kw">"rows_out"</span>: <span class="nm">80</span>, <span class="kw">"rows_retained_pct"</span>: <span class="nm">100.0</span>,
+    <span class="kw">"dropped_duplicates"</span>: <span class="nm">0</span>, <span class="kw">"dropped_null_text"</span>: <span class="nm">0</span>,
+    <span class="kw">"text_col"</span>: <span class="st">"complaint_text"</span>
+  },
+  <span class="kw">"themes"</span>: [
+    { <span class="kw">"theme_id"</span>: <span class="nm">0</span>, <span class="kw">"label"</span>: <span class="st">"Transaction Problems"</span>, <span class="kw">"count"</span>: <span class="nm">20</span> },
+    ...
+  ]
+}</pre></div>
+      <div class="callout cs">
+        <span class="ci-icon">✅</span>
+        <div>Run <code>cd 1_complaints_tool &amp;&amp; python main.py --input ../data/sample_complaints.csv --output-dir ../out</code> to generate all four output files.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 7 — A2: ARCHITECTURE
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="sh"><h1>Assignment 2 — System Architecture</h1><span class="sn">7 / 15</span></div>
+    <div class="sb">
+      <h2>Chat Analyzer — Component Diagram</h2>
+      <div class="flow">
+        <div class="frow">
+          <div class="fn fn-s">👤 User question</div>
+          <div class="fa">→</div>
+          <div class="fn fn-b">router.py<br><code>classify(query)</code></div>
+          <div class="fa">→ keyword scoring →</div>
+          <div class="fn fn-a">quant / qual</div>
+        </div>
+        <div class="frow findent">
+          <div class="fn fn-b">quant_handler.py</div>
+          <div class="fa">→ aggregates from DataFrame →</div>
+          <div class="fn fn-g">Formatted answer + data dict</div>
+        </div>
+        <div class="frow findent">
+          <div class="fn fn-b">qual_handler.py</div>
+          <div class="fa">→ keyword retrieval →</div>
+          <div class="fn fn-p">llm_client.py</div>
+          <div class="fa">→ summary text</div>
+        </div>
+        <div class="frow findent2" style="margin-top:.4rem;">
+          <div class="fn fn-g">✅ NO-KEY: rule-based template</div>
+          <div class="fa">OR</div>
+          <div class="fn fn-p">🔑 OpenAI / Anthropic API</div>
+        </div>
+        <div class="frow" style="margin-top:.75rem;">
+          <div class="fn fn-g">📤 Output: answer + examples + confidence + llm_mode</div>
+        </div>
+      </div>
+      <div class="cards c3">
+        <div class="card bl">
+          <h4>Data Layer</h4>
+          <ul>
+            <li>Loads <code>cleaned_complaints.csv</code></li>
+            <li>Loads <code>themes.csv</code></li>
+            <li>Pre-computes monthly/weekly periods</li>
+            <li>Auto-runs A1 if files missing</li>
+          </ul>
+        </div>
+        <div class="card am">
+          <h4>Router</h4>
+          <ul>
+            <li>Regex keyword scoring</li>
+            <li>Quant vs qual classification</li>
+            <li>Tie-break: structural question words</li>
+            <li>Extensible pattern lists</li>
+          </ul>
+        </div>
+        <div class="card pu">
+          <h4>LLM Client</h4>
+          <ul>
+            <li>Anthropic → OpenAI → no-key priority</li>
+            <li>Prompt = query + retrieved examples</li>
+            <li>Returns (text, mode) tuple</li>
+            <li>Errors caught, mode reported</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 8 — A2: QUERY ROUTER
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="sh"><h1>Assignment 2 — Query Router</h1><span class="sn">8 / 15</span></div>
+    <div class="sb">
+      <h2>How Queries Are Classified</h2>
+      <div class="two">
+        <div>
+          <h3><span class="tag tq">QUANT</span> Quantitative triggers</h3>
+          <table class="tbl">
+            <tr><th>Pattern</th><th>Example</th></tr>
+            <tr><td>how many / total / count</td><td>"How many complaints…"</td></tr>
+            <tr><td>percentage / percent</td><td>"What percentage are high severity?"</td></tr>
+            <tr><td>trend / over time / by month</td><td>"Show me the monthly trend"</td></tr>
+            <tr><td>by channel / by product</td><td>"Breakdown by channel"</td></tr>
+            <tr><td>top N themes / most common</td><td>"What are the top themes?"</td></tr>
+            <tr><td>highest / lowest / average</td><td>"Which product has the most?"</td></tr>
+          </table>
+        </div>
+        <div>
+          <h3><span class="tag tl">QUAL</span> Qualitative triggers</h3>
+          <table class="tbl">
+            <tr><th>Pattern</th><th>Example</th></tr>
+            <tr><td>why / what are customers saying</td><td>"Why are customers frustrated?"</td></tr>
+            <tr><td>summarise / summarize</td><td>"Summarise billing complaints"</td></tr>
+            <tr><td>describe / explain</td><td>"Describe account access issues"</td></tr>
+            <tr><td>show me examples</td><td>"Show me examples of fraud"</td></tr>
+            <tr><td>pain point / what is wrong</td><td>"What is wrong with the app?"</td></tr>
+            <tr><td>what do customers / what kind</td><td>"What do customers say about…"</td></tr>
+          </table>
+        </div>
+      </div>
+      <h3>Retrieval Strategy (Qual Queries)</h3>
+      <div class="flow">
+        <div class="frow">
+          <div class="fn fn-b">Query keywords extracted</div>
+          <div class="fa">→</div>
+          <div class="fn fn-a">Match theme label?</div>
+          <div class="fa">→ Yes →</div>
+          <div class="fn fn-g">Filter to that theme's rows</div>
+        </div>
+        <div class="frow findent">
+          <div class="fn fn-a">No theme match</div>
+          <div class="fa">→</div>
+          <div class="fn fn-g">Full dataset pool</div>
+          <div class="fa">→</div>
+          <div class="fn fn-b">Keyword regex search</div>
+          <div class="fa">→</div>
+          <div class="fn fn-g">Top 8 matching texts → LLM/rules</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 9 — A2: EXAMPLE Q&A
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="sh"><h1>Assignment 2 — Example Q&amp;A</h1><span class="sn">9 / 15</span></div>
+    <div class="sb">
+      <h2>12 Example Questions &amp; Expected Responses</h2>
+      <table class="tbl">
+        <tr><th>#</th><th>Question</th><th>Type</th><th>Expected response</th></tr>
+        <tr><td>1</td><td>How many complaints are there in total?</td><td><span class="tag tq">QUANT</span></td><td>Count of rows from cleaned CSV with top theme callout</td></tr>
+        <tr><td>2</td><td>What are the top complaint themes?</td><td><span class="tag tq">QUANT</span></td><td>Ranked list of all 5 themes with counts and %</td></tr>
+        <tr><td>3</td><td>How many complaints came through phone?</td><td><span class="tag tq">QUANT</span></td><td>Channel breakdown table with counts and % per channel</td></tr>
+        <tr><td>4</td><td>Show me the monthly complaint trend</td><td><span class="tag tq">QUANT</span></td><td>Month-by-month counts (Jan–Mar 2024)</td></tr>
+        <tr><td>5</td><td>What percentage are high severity?</td><td><span class="tag tq">QUANT</span></td><td>Severity distribution: high/medium/low with %</td></tr>
+        <tr><td>6</td><td>Which product has the most complaints?</td><td><span class="tag tq">QUANT</span></td><td>Product category breakdown sorted by volume</td></tr>
+        <tr><td>7</td><td>Why are customers frustrated with the mobile app?</td><td><span class="tag tl">QUAL</span></td><td>LLM/rule summary of app-theme complaints; 2 examples shown</td></tr>
+        <tr><td>8</td><td>Summarise complaints about billing and fees</td><td><span class="tag tl">QUAL</span></td><td>Analysis of fee-related complaints with recommendation</td></tr>
+        <tr><td>9</td><td>What are customers saying about customer service?</td><td><span class="tag tl">QUAL</span></td><td>Identifies wait times, rude agents, unresolved issues</td></tr>
+        <tr><td>10</td><td>Describe the main issues with account access</td><td><span class="tag tl">QUAL</span></td><td>Locked accounts, 2FA failures, password reset problems</td></tr>
+        <tr><td>11</td><td>Show me examples of transaction problems</td><td><span class="tag tl">QUAL</span></td><td>Top 3 retrieved examples from transaction theme</td></tr>
+        <tr><td>12</td><td>What is wrong with the loan application process?</td><td><span class="tag tl">QUAL</span></td><td>Retrieves mortgage/loan complaints; summarises delays</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 10 — A3: EWP OVERVIEW
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="sh"><h1>Assignment 3 — EWP Overview</h1><span class="sn">10 / 15</span></div>
+    <div class="sb">
+      <h2>Early Warning Process — Purpose &amp; Goals</h2>
+      <div class="cards c2">
+        <div class="card re">
+          <h4>❌ Without EWP</h4>
+          <ul>
+            <li>Complaint surges noticed next-day in reports</li>
+            <li>Emerging themes found via manual review</li>
+            <li>No structured escalation path</li>
+            <li>Audit trail is ad-hoc or absent</li>
+            <li>Response time: hours to days</li>
+          </ul>
+        </div>
+        <div class="card gr">
+          <h4>✅ With EWP</h4>
+          <ul>
+            <li>Spike detected within 15 minutes</li>
+            <li>Theme spikes surfaced automatically</li>
+            <li>Graduated WARN → CRITICAL escalation</li>
+            <li>Full audit log for compliance</li>
+            <li>Response time: 15 min for CRITICAL</li>
+          </ul>
+        </div>
+      </div>
+      <h3>6 Monitored Signals</h3>
+      <table class="tbl">
+        <tr><th>Signal</th><th>What it detects</th><th>Window</th></tr>
+        <tr><td><strong>SIG-01</strong> Volume Spike</td><td>Total complaints exceed rolling mean + N×σ</td><td>15 min / 1 h</td></tr>
+        <tr><td><strong>SIG-02</strong> Theme Spike</td><td>Single theme share jumps &gt;50% above 14-day baseline</td><td>1 h</td></tr>
+        <tr><td><strong>SIG-03</strong> Severity Escalation</td><td>High-severity % &gt; 30% (WARN) or &gt;50% (CRIT)</td><td>4 h</td></tr>
+        <tr><td><strong>SIG-04</strong> Channel Surge</td><td>One channel dominates anomalously (system failure signal)</td><td>1 h</td></tr>
+        <tr><td><strong>SIG-05</strong> Keyword Alert</td><td>Critical words (fraud, CFPB, lawsuit) exceed frequency</td><td>1 h</td></tr>
+        <tr><td><strong>SIG-06</strong> No-Data Alert</td><td>Zero complaints → pipeline failure detection</td><td>2 h / 4 h</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 11 — A3: THRESHOLDS
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="sh"><h1>Assignment 3 — Signals &amp; Thresholds</h1><span class="sn">11 / 15</span></div>
+    <div class="sb">
+      <h2>Baseline Formulas &amp; Escalation Levels</h2>
+      <div class="two">
+        <div>
+          <h3>Volume Spike (SIG-01)</h3>
+          <div class="code"><pre>baseline = mean(daily_count[t-28:t-1])
+std      = std(daily_count[t-28:t-1])
+
+<span class="kw">WARN</span>     = baseline + <span class="nm">1.5</span> × std
+<span class="kw">CRITICAL</span> = baseline + <span class="nm">3.0</span> × std</pre></div>
+          <h3>Theme Spike (SIG-02)</h3>
+          <div class="code"><pre>spike_factor = current_pct / baseline_pct
+
+<span class="kw">WARN</span>     = spike_factor &gt; <span class="nm">1.5</span>   <span class="cm"># +50%</span>
+<span class="kw">CRITICAL</span> = spike_factor &gt; <span class="nm">2.5</span>   <span class="cm"># +150%</span></pre></div>
+          <h3>Severity Escalation (SIG-03)</h3>
+          <div class="code"><pre>high_pct = high_count / total_count
+
+<span class="kw">WARN</span>     = high_pct &gt; <span class="nm">0.30</span>   <span class="cm"># >30%</span>
+<span class="kw">CRITICAL</span> = high_pct &gt; <span class="nm">0.50</span>   <span class="cm"># >50%</span></pre></div>
+        </div>
+        <div>
+          <h3>Escalation Levels</h3>
+          <div class="card bl" style="margin-bottom:.6rem;">
+            <h4>🔵 INFO</h4>
+            <p>Signal detected, below WARN threshold.<br>Dashboard update only. 4h review SLA.</p>
+          </div>
+          <div class="card am" style="margin-bottom:.6rem;">
+            <h4>🟡 WARN</h4>
+            <p>Single signal crosses WARN threshold.<br>Slack + email to CX Lead + PM. 1h SLA.</p>
+          </div>
+          <div class="card re">
+            <h4>🔴 CRITICAL</h4>
+            <p>Signal crosses CRITICAL threshold <strong>OR</strong> 2+ WARN signals simultaneously.<br>Slack + email + PagerDuty. 15 min SLA.</p>
+          </div>
+          <div class="callout cw" style="margin-top:.75rem;">
+            <span class="ci-icon">⚠️</span>
+            <div>HITL required for WARN and CRITICAL. Unacknowledged alerts auto-escalate to next tier after SLA timeout.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 12 — A3: WORKFLOW DIAGRAM
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="sh"><h1>Assignment 3 — n8n Workflow</h1><span class="sn">12 / 15</span></div>
+    <div class="sb">
+      <h2>Node-by-Node Flow (see ewp_workflow.mmd for full Mermaid)</h2>
+      <div class="flow">
+        <div class="frow">
+          <div class="fn fn-p">⏰ Schedule Trigger<br><small>Every 15 min</small></div>
+          <div class="fa">→</div>
+          <div class="fn fn-b">🗄️ Postgres<br>Fetch counts</div>
+          <div class="fa">→</div>
+          <div class="fn fn-b">⚙️ Function<br>Compute SIG-01…06</div>
+          <div class="fa">→</div>
+          <div class="fn fn-a">❓ IF<br>Threshold crossed?</div>
+        </div>
+        <div class="frow findent" style="margin-top:.55rem;">
+          <div class="fn fn-s">No breach</div>
+          <div class="fa">→</div>
+          <div class="fn fn-g">📝 Log execution<br>to audit_log</div>
+          <div class="fa">→</div>
+          <div class="fn fn-g">✅ End cycle</div>
+        </div>
+        <div class="frow findent" style="margin-top:.4rem;">
+          <div class="fn fn-r">Breach detected</div>
+          <div class="fa">→</div>
+          <div class="fn fn-b">⚙️ Determine level<br>+ build payload</div>
+          <div class="fa">→</div>
+          <div class="fn fn-p">💬 Slack alert</div>
+          <div class="fa">+</div>
+          <div class="fn fn-p">📧 Email</div>
+          <div class="fa">+</div>
+          <div class="fn fn-r">📟 PagerDuty<br>(CRIT only)</div>
+        </div>
+        <div class="frow findent" style="margin-top:.4rem;">
+          <div class="fn fn-a">⏳ Wait for HITL<br>webhook</div>
+          <div class="fa">→ Ack received →</div>
+          <div class="fn fn-g">✅ Log outcome<br>actor + timestamp</div>
+        </div>
+        <div class="frow findent" style="margin-top:.3rem;">
+          <div class="fn fn-a">⏳ Wait</div>
+          <div class="fa">→ Timeout expired →</div>
+          <div class="fn fn-r">🚨 Escalate<br>to next tier</div>
+          <div class="fa">→</div>
+          <div class="fn fn-g">📝 Log escalation</div>
+        </div>
+      </div>
+      <h3>Human-in-the-Loop Actions</h3>
+      <div class="cards c3">
+        <div class="card gr"><h4>✅ Acknowledge</h4><p>Click Slack button or reply to email. Logs actor + timestamp. Resets escalation timer.</p></div>
+        <div class="card am"><h4>🔍 Investigating</h4><p>Marks alert as under active investigation. Sends periodic status updates every 30 min.</p></div>
+        <div class="card re"><h4>❌ False Positive</h4><p>Logs FP label for threshold calibration. Auto-silences same signal for 24 h.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 13 — A3: ALERT PAYLOAD
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="sh"><h1>Assignment 3 — Example Alert Payload</h1><span class="sn">13 / 15</span></div>
+    <div class="sb">
+      <h2>JSON Alert Payload — CRITICAL Level</h2>
+      <div class="code"><pre>{
+  <span class="kw">"alert_id"</span>: <span class="st">"EWP-2024-03-28-0042"</span>,
+  <span class="kw">"generated_at"</span>: <span class="st">"2024-03-28T14:32:07Z"</span>,
+  <span class="kw">"level"</span>: <span class="st">"CRITICAL"</span>,
+  <span class="kw">"signal"</span>: {
+    <span class="kw">"id"</span>: <span class="st">"SIG-01"</span>, <span class="kw">"name"</span>: <span class="st">"Volume Spike"</span>,
+    <span class="kw">"current_value"</span>: <span class="nm">47</span>, <span class="kw">"baseline_value"</span>: <span class="nm">12.4</span>,
+    <span class="kw">"threshold_critical"</span>: <span class="nm">37.2</span>, <span class="kw">"spike_factor"</span>: <span class="nm">3.79</span>
+  },
+  <span class="kw">"context"</span>: {
+    <span class="kw">"top_theme"</span>: { <span class="kw">"label"</span>: <span class="st">"App &amp; Login Issues"</span>, <span class="kw">"count_in_window"</span>: <span class="nm">23</span>, <span class="kw">"share_pct"</span>: <span class="nm">48.9</span> },
+    <span class="kw">"top_channel"</span>: <span class="st">"mobile_app"</span>,
+    <span class="kw">"top_keywords"</span>: [<span class="st">"crash"</span>, <span class="st">"login"</span>, <span class="st">"error"</span>, <span class="st">"cannot access"</span>],
+    <span class="kw">"example_complaint_ids"</span>: [<span class="st">"C022"</span>, <span class="st">"C026"</span>, <span class="st">"C030"</span>]  <span class="cm">// IDs only, not full text</span>
+  },
+  <span class="kw">"escalation"</span>: {
+    <span class="kw">"notified"</span>: [<span class="st">"cx-director@company.com"</span>, <span class="st">"oncall-engineer@company.com"</span>],
+    <span class="kw">"slack_channel"</span>: <span class="st">"#cx-critical-alerts"</span>,
+    <span class="kw">"acknowledgement_required_by"</span>: <span class="st">"2024-03-28T14:47:07Z"</span>
+  },
+  <span class="kw">"audit"</span>: { <span class="kw">"workflow_run_id"</span>: <span class="st">"n8n-run-8829a1f"</span>, <span class="kw">"ewp_version"</span>: <span class="st">"1.2.0"</span> }
+}</pre></div>
+      <div class="callout cr">
+        <span class="ci-icon">🔒</span>
+        <div><strong>PII note:</strong> Complaint <em>texts</em> are never included in the alert payload. Only complaint IDs are referenced. Full text requires role-based DB access. Slack channel is private and access-controlled.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 14 — RISKS & GOVERNANCE
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="sh"><h1>Risks &amp; Governance</h1><span class="sn">14 / 15</span></div>
+    <div class="sb">
+      <h2>Cross-Cutting Concerns</h2>
+      <div class="cards c2">
+        <div class="card re">
+          <h4>🔒 PII &amp; Data Privacy</h4>
+          <ul>
+            <li>Cleaning strips URLs &amp; email addresses from text before LLM calls</li>
+            <li>Alert payloads contain complaint IDs only (not free text)</li>
+            <li>LLM prompts use retrieved examples — no personal identifiers</li>
+            <li>Audit logs redact complaint text; retain 7 years for regulatory compliance</li>
+          </ul>
+        </div>
+        <div class="card am">
+          <h4>🤖 LLM Hallucination Risk</h4>
+          <ul>
+            <li>Qual handler uses <em>retrieval-augmented</em> prompts: LLM sees real examples, not open-ended queries</li>
+            <li>NO-KEY MODE avoids LLM entirely; rule-based answers cite source rows</li>
+            <li>Confidence indicator shows how many rows were retrieved</li>
+            <li>EWP alert summaries use IDs + keyword lists, not generated text</li>
+          </ul>
+        </div>
+        <div class="card bl">
+          <h4>📊 Monitoring &amp; Drift</h4>
+          <ul>
+            <li>EWP baseline recalculated on each run using rolling 28-day window</li>
+            <li>False positive rate tracked in audit log; monthly calibration review</li>
+            <li>Theme labels may drift as new complaint types emerge — retrain KMeans quarterly</li>
+            <li>LLM API errors are caught; system falls back to NO-KEY mode</li>
+          </ul>
+        </div>
+        <div class="card gr">
+          <h4>📋 Audit &amp; Compliance</h4>
+          <ul>
+            <li>Every EWP workflow run logged (even no-alert runs)</li>
+            <li>Every HITL interaction recorded with actor email + timestamp</li>
+            <li>False positive labels stored for threshold calibration</li>
+            <li>Alert logs retained 7 years; HITL logs 2 years (financial services)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout ci">
+        <span class="ci-icon">💡</span>
+        <div><strong>Governance principle:</strong> Humans approve all WARN and CRITICAL escalations. The system surfaces signals and evidence — decisions are always human-owned.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SLIDE 15 — NEXT STEPS
+       ══════════════════════════════════════════════════════════ -->
+  <section class="slide">
+    <div class="sh"><h1>If I Had More Time — Next Steps</h1><span class="sn">15 / 15</span></div>
+    <div class="sb">
+      <h2>Production Readiness Checklist</h2>
+      <div class="cards c3">
+        <div class="card bl">
+          <h4>📋 Assignment 1 Enhancements</h4>
+          <ul>
+            <li>Replace KMeans with BERTopic for richer semantic themes</li>
+            <li>Add silhouette score to auto-select optimal n_themes</li>
+            <li>Incremental ingestion (append-only, detect new rows by ID)</li>
+            <li>Severity auto-classifier (keyword rules or fine-tuned model)</li>
+            <li>HTML report output (charts via Plotly)</li>
+          </ul>
+        </div>
+        <div class="card gr">
+          <h4>🤖 Assignment 2 Enhancements</h4>
+          <ul>
+            <li>Streamlit web UI (file ready to drop in)</li>
+            <li>Semantic search with sentence-transformers + FAISS</li>
+            <li>Conversation history (multi-turn context)</li>
+            <li>Structured output parsing (JSON from LLM)</li>
+            <li>Caching layer for repeated queries</li>
+          </ul>
+        </div>
+        <div class="card re">
+          <h4>🚨 Assignment 3 Enhancements</h4>
+          <ul>
+            <li>Export actual n8n workflow JSON (importable)</li>
+            <li>Sentiment score as SIG-07 (VADER or transformer-based)</li>
+            <li>Adaptive thresholds (Bayesian updating on FP feedback)</li>
+            <li>Grafana dashboard for real-time signal monitoring</li>
+            <li>Integration test against synthetic DB fixture</li>
+          </ul>
+        </div>
+      </div>
+      <div class="cards c2" style="margin-top:.75rem;">
+        <div class="card am">
+          <h4>🏗️ Infrastructure</h4>
+          <ul>
+            <li>Containerise with Docker (one image per assignment)</li>
+            <li>CI/CD pipeline (pytest → lint → build on every PR)</li>
+            <li>Secrets management (env vars → Vault or AWS Secrets Manager)</li>
+            <li>Load testing with realistic complaint volumes (10k+/day)</li>
+          </ul>
+        </div>
+        <div class="card pu">
+          <h4>🔐 Security &amp; Compliance</h4>
+          <ul>
+            <li>Formal PII audit of all data flows (GDPR / CCPA alignment)</li>
+            <li>LLM output guardrails (refuse PII reproduction)</li>
+            <li>RBAC on cleaned data and audit logs</li>
+            <li>Penetration test of n8n webhook endpoints</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div id="nav">
+  <button class="nb" onclick="go(-1)">← Prev</button>
+  <span id="pt">1 / 15</span>
+  <button class="nb" onclick="go(1)">Next →</button>
+  <span class="kh">keyboard: ← →</span>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total  = slides.length;
+  let cur = 0;
+
+  function go(dir) {
+    slides[cur].classList.remove('active');
+    slides[cur].classList.add('prev');
+    setTimeout(() => slides[cur].classList.remove('prev'), 380);
+    cur = Math.max(0, Math.min(total - 1, cur + dir));
+    slides[cur].classList.add('active');
+    document.getElementById('pt').textContent = `${cur + 1} / ${total}`;
+    document.getElementById('pbar').style.width = `${(cur + 1) / total * 100}%`;
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(1); }
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); go(-1); }
+  });
+
+  // Touch/swipe support
+  let tx = 0;
+  document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+  });
+
+  // Init progress bar
+  document.getElementById('pbar').style.width = `${1 / total * 100}%`;
+</script>
+</body>
+</html>

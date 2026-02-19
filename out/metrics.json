@@ -1,0 +1,40 @@
+{
+  "generated_at": "2026-02-18T13:52:05.517905+00:00",
+  "cleaning": {
+    "rows_in": 80,
+    "text_col": "complaint_text",
+    "dropped_all_null_rows": 0,
+    "dropped_null_text": 0,
+    "dropped_duplicates": 0,
+    "dropped_short_text": 0,
+    "rows_out": 80,
+    "rows_retained_pct": 100.0
+  },
+  "themes": [
+    {
+      "theme_id": 4,
+      "label": "App & Login Issues",
+      "count": 21
+    },
+    {
+      "theme_id": 0,
+      "label": "Transaction Problems",
+      "count": 20
+    },
+    {
+      "theme_id": 2,
+      "label": "Billing & Fee Disputes",
+      "count": 15
+    },
+    {
+      "theme_id": 3,
+      "label": "Billing & Fee Disputes",
+      "count": 14
+    },
+    {
+      "theme_id": 1,
+      "label": "Billing & Fee Disputes",
+      "count": 10
+    }
+  ]
+}

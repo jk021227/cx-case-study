@@ -1,0 +1,57 @@
+---
+title: EWP n8n Workflow — Early Warning Process
+---
+flowchart TD
+    A([🕐 Schedule Trigger\nEvery 15 minutes]) --> B
+
+    B[🗄️ Postgres Node\nFetch complaint counts\nfor last 15 min window] --> C
+
+    C[⚙️ Function Node\nCompute signals:\n• SIG-01 Volume\n• SIG-02 Theme spike\n• SIG-03 Severity\n• SIG-04 Channel surge\n• SIG-05 Keywords\n• SIG-06 No-data] --> D
+
+    D{Any threshold\ncrossed?}
+
+    D -- No breach --> E[🗄️ Postgres Node\nLog execution\nto ewp_audit_log]
+    E --> Z([✅ End cycle])
+
+    D -- Breach detected --> F[⚙️ Function Node\nDetermine level\nINFO / WARN / CRITICAL\nBuild alert payload\nAnonymise PII]
+
+    F -- INFO --> G[📊 HTTP Request\nUpdate monitoring\ndashboard via API]
+    G --> E
+
+    F -- WARN or CRITICAL --> H[⚙️ Function Node\nSelect notification\nchannels by level]
+
+    H --> I[💬 Slack Node\nPost alert card to\n#cx-alerts or\n#cx-critical]
+    H --> J[📧 Email Node\nSend HTML alert\nto on-call list]
+    H --> K_cond{Level is\nCRITICAL?}
+    K_cond -- Yes --> K[📟 PagerDuty Node\nCreate incident\nfor on-call engineer]
+    K_cond -- No --> L
+
+    I --> L[⏳ Wait Node\nAwait HITL webhook\nWARN: 60 min timeout\nCRITICAL: 15 min timeout]
+    J --> L
+    K --> L
+
+    L -- Webhook received --> M{Action\nfrom human?}
+    L -- Timeout expired --> N[⚙️ Function Node\nBuild escalation\npayload]
+
+    M -- Acknowledged /\nInvestigating --> O[🗄️ Postgres Node\nLog HITL ack\nactor + timestamp]
+    M -- False Positive --> P[🗄️ Postgres Node\nLog false positive\nUpdate threshold model]
+    M -- Resolved --> Q[💬 Slack Node\nPost resolution\nmessage to channel]
+
+    N --> R[💬 Slack Node\nEscalate — mention\nnext-tier responders]
+    N --> S[📧 Email Node\nSend escalation\nto director level]
+    N --> T[🗄️ Postgres Node\nLog escalation\nevent + timestamp]
+
+    O --> Z
+    P --> Z
+    Q --> Z
+    R --> Z
+    S --> Z
+    T --> Z
+
+    style A fill:#6366F1,color:#fff,stroke:#4F46E5
+    style Z fill:#10B981,color:#fff,stroke:#059669
+    style D fill:#F59E0B,color:#fff,stroke:#D97706
+    style M fill:#F59E0B,color:#fff,stroke:#D97706
+    style K_cond fill:#F59E0B,color:#fff,stroke:#D97706
+    style F fill:#3B82F6,color:#fff,stroke:#2563EB
+    style N fill:#EF4444,color:#fff,stroke:#DC2626
