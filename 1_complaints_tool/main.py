@@ -117,7 +117,7 @@ def main(argv: list[str] | None = None) -> int:
     print()
     print("  Output files:")
     for name, path in paths.items():
-        print(f"    {name:<20} → {path}")
+        print(f"    {name:<20} -> {path}")
     print(f"{divider}\n")
 
     return 0

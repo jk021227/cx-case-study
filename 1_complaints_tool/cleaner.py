@@ -71,7 +71,7 @@ def detect_text_column(df: pd.DataFrame) -> str:
         )
 
     avg_len: dict[str, float] = {
-        c: df[c].dropna().astype(str).str.len().mean() for c in str_cols
+        c: df[c].dropna().astype(str).str.len().mean() for c in str_cols 
     }
     best = max(avg_len, key=avg_len.get)  # type: ignore[arg-type]
     logger.warning(
@@ -86,8 +86,8 @@ def detect_text_column(df: pd.DataFrame) -> str:
 def normalize_text(text: str) -> str:
     """Normalise a single complaint string.
 
-    Steps: lowercase → strip URLs → strip emails → strip special chars →
-           collapse whitespace → strip leading/trailing whitespace.
+    Steps: lowercase -> strip URLs -> strip emails -> strip special chars ->
+           collapse whitespace -> strip leading/trailing whitespace.
     """
     if not isinstance(text, str):
         return ""
@@ -168,7 +168,7 @@ def clean(
     )
 
     logger.info(
-        "Cleaning complete: %d → %d rows (%.1f%% retained, "
+        "Cleaning complete: %d -> %d rows (%.1f%% retained, "
         "%d dupes, %d null-text, %d too-short removed)",
         metrics["rows_in"],
         metrics["rows_out"],

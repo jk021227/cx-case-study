@@ -100,7 +100,7 @@ def _write_summary(
             dates = pd.to_datetime(cleaned_df["date"], errors="coerce").dropna()
             if len(dates) > 0:
                 lines += [
-                    f"| Date range | {dates.min().date()} → {dates.max().date()} |",
+                    f"| Date range | {dates.min().date()} -> {dates.max().date()} |",
                     "",
                 ]
         except Exception:

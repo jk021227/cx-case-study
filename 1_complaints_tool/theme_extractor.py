@@ -42,7 +42,7 @@ _STOPWORDS: set[str] = {
     "tried", "trying", "keep", "kept",
 }
 
-# Heuristic label rules: keyword set → human-readable label
+# Heuristic label rules: keyword set -> human-readable label
 _LABEL_RULES: list[tuple[set[str], str]] = [
     ({"app", "mobile", "login", "crash", "password", "screen", "error", "loading",
       "authentication", "fingerprint", "face", "update", "ios", "android"}, "App & Login Issues"),
@@ -68,16 +68,16 @@ def _auto_label(top_keywords: list[str]) -> str:
         if kw_set & keyword_group:
             return label
     # Fallback: title-case top 2 keywords
-    return " & ".join(w.title() for w in top_keywords[:2])
+    return " & ".join(w.title() for w in top_keywords[:2]) # This is not most effective, could be improved with a more sophisticated approach (e.g. using a language model to generate labels)
 
 
 def extract_themes(
     df: pd.DataFrame,
     text_col: str = "text_clean",
-    n_themes: int = 5,
-    seed: int = 42,
-    n_top_keywords: int = 10,
-    max_features: int = 3000,
+    n_themes: int = 5, # Adjusted default to 5 for better granularity in typical datasets; can be overridden as needed
+    seed: int = 42, # Fixed seed for reproducibility; can be parameterized if variability is desired
+    n_top_keywords: int = 10, # Number of top keywords to extract per theme; balances interpretability with noise reduction
+    max_features: int = 3000, # Cap on TF-IDF features to manage memory and focus on most relevant terms; can be tuned based on dataset size and complexity
 ) -> pd.DataFrame:
     """Extract complaint themes via TF-IDF vectorisation + KMeans clustering.
 
@@ -113,7 +113,7 @@ def extract_themes(
             len(texts), n_themes,
         )
 
-    vectorizer = TfidfVectorizer(
+    vectorizer = TfidfVectorizer( # Using TF-IDF to capture term importance while mitigating common but less informative words; n-grams help capture multi-word expressions relevant to themes
         ngram_range=(1, 2),
         max_features=max_features,
         stop_words=list(_STOPWORDS),
@@ -122,16 +122,16 @@ def extract_themes(
     )
     X = vectorizer.fit_transform(texts)
 
-    km = KMeans(n_clusters=n_themes, random_state=seed, n_init=10, max_iter=300)
-    labels: np.ndarray = km.fit_predict(X)
+    km = KMeans(n_clusters=n_themes, random_state=seed, n_init=10, max_iter=300) 
+    labels: np.ndarray = km.fit_predict(X) 
     df["theme_id"] = labels.tolist()
 
     feature_names = vectorizer.get_feature_names_out()
-    # argsort descending → indices of highest-weight features per centroid
+    # argsort descending -> indices of highest-weight features per centroid
     order_centroids = km.cluster_centers_.argsort()[:, ::-1]
 
     records: list[dict] = []
-    for i in range(n_themes):
+    for i in range(n_themes): # For each theme/cluster, extract top keywords and example texts to aid interpretability; heuristic labeling provides user-friendly theme names
         top_kw = [feature_names[idx] for idx in order_centroids[i, :n_top_keywords]]
         mask = df["theme_id"] == i
         count = int(mask.sum())

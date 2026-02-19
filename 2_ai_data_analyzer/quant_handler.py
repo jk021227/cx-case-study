@@ -56,7 +56,7 @@ class QuantHandler:
 
     # ── Query implementations ──────────────────────────────────────────────────
 
-    def _count_query(self, q: str) -> dict[str, Any]:
+    def _count_query(self, q: str) -> dict[str, Any]: # Count total complaints, with optional extra context if themes/channels are present
         total = len(self.df)
         extras: list[str] = []
 
@@ -83,7 +83,7 @@ class QuantHandler:
             "confidence": f"Based on all {total:,} rows",
         }
 
-    def _top_themes_query(self) -> dict[str, Any]:
+    def _top_themes_query(self) -> dict[str, Any]: # List top themes by complaint volume, with counts and percentages; returns theme_id, label, count for each theme to support follow-up queries and visualizations
         rows = [
             f"  {rank}. **{row['label']}** — {int(row['count']):,} complaints "
             f"({int(row['count'])/len(self.df)*100:.1f}%)"
@@ -95,10 +95,10 @@ class QuantHandler:
             "confidence": f"Based on {len(self.df):,} complaints across {len(self.themes)} themes",
         }
 
-    def _all_themes_query(self) -> dict[str, Any]:
+    def _all_themes_query(self) -> dict[str, Any]: # Return all themes with details; for simplicity, currently returns same as top themes query but could be extended to include more info or support pagination/filtering in the future
         return self._top_themes_query()
 
-    def _channel_query(self) -> dict[str, Any]:
+    def _channel_query(self) -> dict[str, Any]: # Show complaint breakdown by channel, with counts and percentages; returns channel name and count for each channel to support follow-up queries and visualizations
         if "channel" not in self.df.columns:
             return {
                 "answer": "No `channel` column found in the dataset.",
@@ -116,7 +116,7 @@ class QuantHandler:
             "confidence": f"Based on {len(self.df):,} complaints",
         }
 
-    def _trend_query(self, q: str) -> dict[str, Any]:
+    def _trend_query(self, q: str) -> dict[str, Any]: # Show complaint trend over time, with counts per period; returns period and count for each period to support follow-up queries and visualizations
         if "_month" not in self.df.columns:
             return {
                 "answer": "No `date` column found — trend analysis unavailable.",
@@ -144,7 +144,7 @@ class QuantHandler:
             ),
         }
 
-    def _severity_query(self) -> dict[str, Any]:
+    def _severity_query(self) -> dict[str, Any]: # Show complaint breakdown by severity, with counts and percentages; returns severity level and count for each level to support follow-up queries and visualizations
         if "severity" not in self.df.columns:
             return {
                 "answer": "No `severity` column found in the dataset.",
@@ -162,7 +162,7 @@ class QuantHandler:
             "confidence": f"Based on {len(self.df):,} complaints",
         }
 
-    def _product_query(self) -> dict[str, Any]:
+    def _product_query(self) -> dict[str, Any]: # Show complaint breakdown by product/category, with counts and percentages; returns product/category name and count for each to support follow-up queries and visualizations
         col = next(
             (c for c in ["product_category", "product", "category"]
              if c in self.df.columns),
@@ -185,7 +185,7 @@ class QuantHandler:
             "confidence": f"Based on {len(self.df):,} complaints",
         }
 
-    def _general_stats(self) -> dict[str, Any]:
+    def _general_stats(self) -> dict[str, Any]: # Show general dataset statistics, including total complaints, top theme, top channel, and high-severity complaints
         total = len(self.df)
         lines = [f"**Dataset summary:** {total:,} complaints loaded."]
 

@@ -15,8 +15,8 @@ Usage
 LLM Modes
 ---------
   NO-KEY MODE (default):   Rule-based answers. Set one of:
-  OPENAI_API_KEY           → enables OpenAI GPT summarisation
-  ANTHROPIC_API_KEY        → enables Anthropic Claude summarisation
+  OPENAI_API_KEY           -> enables OpenAI GPT summarisation
+  ANTHROPIC_API_KEY        -> enables Anthropic Claude summarisation
 
 Type :help inside the chat for example questions.
 """
