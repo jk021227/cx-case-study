@@ -54,7 +54,7 @@ def classify(query: str) -> str:
         return "quant"
     if qual_hits > quant_hits:
         return "qual"
-    # Tie-break: short numeric-style questions → quant; else qual
+    # Tie-break: short numeric-style questions -> quant; else qual
     if re.search(r"\b(how|many|count|total|top|which|show)\b", query, re.I):
         return "quant"
     return "qual"

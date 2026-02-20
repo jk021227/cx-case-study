@@ -1,0 +1,5 @@
+# ignore venv files
+.venv/
+
+# ignore .env in 2_ai_data_analyzer
+2_ai_data_analyzer/.env
